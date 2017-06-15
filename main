@@ -1,0 +1,95 @@
+from urllib.request import urlopen
+from bs4 import BeautifulSoup
+import sqlite3 as sq
+import pandas
+import pandas.io.sql as pd_sql
+import re
+import time
+
+'''
+#codelist 엑셀->DB로 저장
+conn = sq.connect("codelist.db")
+cur = conn.cursor()   
+nasdaq_df = pandas.read_csv("NASDAQ.csv")
+nasdaq_df.to_sql("NASDAQ",conn, if_exists='fail', index=False)
+nyse_df = pandas.read_csv("NYSE.csv")
+nasdaq_df.to_sql("NYSE",conn, if_exists='fail', index=False)
+conn.close()
+'''
+
+nasdaq_df = pandas.read_csv("NASDAQ.csv")
+nyse_df = pandas.read_csv("NYSE.csv")
+name = nasdaq_df['Name']
+lastsale = nasdaq_df['LastSale']
+marketcap = nasdaq_df['MarketCap']
+ipoyr= nasdaq_df['IPOyear']
+sector = nasdaq_df['Sector']
+industry = nasdaq_df['industry']
+nasSym = nasdaq_df['Symbol']
+
+
+
+anal = []
+medlist = []
+highlist = []
+lowlist = []
+increaseE = []
+currentlist = []
+
+endpoint = 500
+
+for i in range(0,len(nasSym)):  
+    print(i)
+    #Crawling of CNN Money website
+    print(nasSym[i])
+    targetUrlCNN = "http://money.cnn.com/quote/forecast/forecast.html?symb="+nasSym[i]
+    htmlCNN = urlopen(targetUrlCNN).read()
+    soupCNN = BeautifulSoup(htmlCNN,'html.parser')
+    
+    try:
+        print('try')
+        ifava1 = soupCNN.find('div', 'wsod_twoCol clearfix')
+        expectP = ifava1.find('p').getText()       
+        #if (expectP != 'There is no forecast data available.'):
+        tlist = re.findall(r'\d+\.\d+',expectP)
+        howmany = re.findall(r'\d+', expectP)
+        anal.append(howmany[0])
+        medlist.append(tlist[0])
+        highlist.append(tlist[1])
+        lowlist.append(tlist[2])
+        increaseE.append(tlist[3])
+        currentlist.append(tlist[4])
+        print(medlist[i], highlist[i], lowlist[i], currentlist[i])        
+    except:
+        print('except')
+        anal.append('NA')
+        medlist.append('NA')
+        highlist.append('NA')
+        lowlist.append('NA')
+        increaseE.append('NA')
+        currentlist.append('NA')
+        print(anal[i], medlist[i], highlist[i], lowlist[i], currentlist[i])   
+
+    if(i%100==0): 
+        time.sleep(5)
+        print(i)
+
+
+'''
+#끊어받기
+wholedf = pandas.DataFrame({"Symbol":nasSym[:endpoint], "Name": name[:endpoint], "Lastsale": lastsale[:endpoint], "MarketCap": marketcap[:endpoint], 
+"IPO yr": ipoyr[:endpoint], "Sector":sector[:endpoint], "Industry":industry[:endpoint],
+"Analyst #": anal[:endpoint], "Med":medlist[:endpoint], "High":highlist[:endpoint], "Low":lowlist[:endpoint], "Current":currentlist[:endpoint], "Median E%": increaseE[:endpoint]})
+print(wholedf)
+'''
+
+wholedf = pandas.DataFrame({"Symbol":nasSym, "Name": name, "Lastsale": lastsale, "MarketCap": marketcap, 
+"IPO yr": ipoyr, "Sector":sector, "Industry":industry,
+"Analyst #": anal, "Med":medlist, "High":highlist, "Low":lowlist, "Current":currentlist, "Median E%": increaseE})
+
+
+conn = sq.connect("NASDAQ.db")
+cur = conn.cursor()  
+wholedf.to_sql("NASDAQ",conn, if_exists='fail', index=False)
+conn.close() 
+
