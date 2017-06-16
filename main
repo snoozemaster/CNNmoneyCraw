@@ -23,7 +23,7 @@ Sym = df[select]['Symbol']
 conn = sq.connect("info.db")
 cur = conn.cursor()  
 
-for i in range(2617,len(Sym)):  
+for i in range(0,len(Sym)):  
     print(i)
     #Crawling of CNN Money website
     print(Sym[i])
