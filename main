@@ -53,9 +53,13 @@ for i in range(0,len(Sym)):
         current = 'NA'
 
     data = (Sym[i], name[i], lastsale[i],marketcap[i],ipoyr[i],sector[i],industry[i],anal,med,high,low,increaseE,current)
-    sql = "INSERT INTO nasdaqinfo(Symbol, Name, LastSale, MarketCap, IPOyear, Sector, Industry, Analyst, Med, High, Low, MedExp, CurrentP) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"  
-    #sql = "INSERT INTO nyseinfo(Symbol, Name, LastSale, MarketCap, IPOyear, Sector, Industry, Analyst, Med, High, Low, MedExp, CurrentP) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"  
-    
+    if(select==0):
+        sql = "INSERT INTO nasdaqinfo(Symbol, Name, LastSale, MarketCap, IPOyear, Sector, Industry, Analyst, Med, High, Low, MedExp, CurrentP) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"  
+    elseif(select==1):
+        sql = "INSERT INTO nyseinfo(Symbol, Name, LastSale, MarketCap, IPOyear, Sector, Industry, Analyst, Med, High, Low, MedExp, CurrentP) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"  
+    else:
+        print("Correct select val")
+        
     cur.execute(sql,data)
     conn.commit()
 
